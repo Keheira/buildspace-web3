@@ -1,24 +1,34 @@
 const main = async () => {
-    const [owner, randomPerson] = await hre.ethers.getSigners();
     const jokeContractFactory = await hre.ethers.getContractFactory('JokePortal');
-    const jokeContract = await jokeContractFactory.deploy();
+    const jokeContract = await jokeContractFactory.deploy({
+        value: hre.ethers.utils.parseEther('0.1')
+    });
     await jokeContract.deployed();
     
     console.log("Contract deployed to: ", jokeContract.address);
-    console.log("Contract deployed by: ", owner.address);
+
+    let contractBalance = await hre.ethers.provider.getBalance(jokeContract.address);
+    console.log('Contract balance: ', hre.ethers.utils.formatEther(contractBalance));
 
     let jokeCount;
     jokeCount = await jokeContract.getTotalJokes();
 
-    let jokeTxn = await jokeContract.tellJoke();
+    let jokeTxn = await jokeContract.tellJoke("Hey Batty!");
     await jokeTxn.wait();
 
-    waveCount = await jokeContract.getTotalJokes();
+    contractBalance = await hre.ethers.provider.getBalance(jokeContract.address);
+    console.log('Contract balance: ', hre.ethers.utils.formatEther(contractBalance));
 
-    jokeTxn = await jokeContract.connect(randomPerson).tellJoke();
+    const [_, randomPerson] = await hre.ethers.getSigners();
+    jokeTxn = await jokeContract.connect(randomPerson).tellJoke("Back again Mr. Wayne");
     await jokeTxn.wait();
 
-    waveCount = await jokeContract.getTotalJokes();
+    contractBalance = await hre.ethers.provider.getBalance(jokeContract.address);
+    console.log('Contract balance: ', hre.ethers.utils.formatEther(contractBalance));
+
+
+    let allJokes = await jokeContract.getAllJokes();
+    console.log(allJokes);
 };
 
 const runMain = async () => {
